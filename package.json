@@ -4,7 +4,7 @@
   "description": "webpack-demo",
   "main": "src/index.js",
   "scripts": {
-    "start": "webpack --config webpack.config.js"
+    "start": "node --inspect-brk ./node_modules/webpack/bin/webpack.js --config webpack.config.js"
   },
   "keywords": [
     "webpack"

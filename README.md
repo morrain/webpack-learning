@@ -153,7 +153,7 @@ module.exports = {
 ```
 **一定要调试！一定要调试！一定要调试！** 通过调试去学习webpack runtime的源码。通过学习最基础的runtime源码，一定会让你醍醐灌顶，茅塞顿开。
 
-**这是打通任督二脉的第一个秘诀！**
+**调试webpack打包后的源码是打通任督二脉的第一个秘诀！**
 
 刚才我们调试了CommonJS(请参考[前端模块化](https://docs.google.com/presentation/d/1VACp58xC5hJesneskKQZ2zbv5YfbbzT7tlMGQeXyBh8/edit#slide=id.g4fecafb3d3_0_15))模块规范下，webpack的加载方式，现在我们把m.js的内容改成ESModule的规范，再打包调试。
 
@@ -716,12 +716,104 @@ module.exports = function (api) {
 
 >虽然polyfill在开发非工具包时问题不大，但是还是推荐大家所有项目都使用babel-runtime的方式。
 
-现在我们就完成了对babel-loader的所有配置，其它loader的使用方式的学习都类似，找相应loader的文档，进行安装和配置就好了。**方法是相通的，方法是相通的，方法是相通的。一定要通过调试去深入研究编译前后的变化。这是精通webpack的第二个秘诀**
+现在我们就完成了对babel-loader的所有配置，其它loader的使用方式的学习都类似，找相应loader的文档，进行安装和配置就好了。**方法是相通的，方法是相通的，方法是相通的。一定要通过调试webpack打包后的源码去深入研究编译前后的变化。**
 
 ### plugin
+
+plugin是webpack核心功能，通过plugin webpack可以实现loader所不能完成的复杂功能，使用plugin丰富的自定义[api](https://webpack.js.org/api/plugins)以及[生命周期事件](https://webpack.js.org/api/compiler-hooks)，可以控制webpack编译流程的每个环节，实现对webpack的自定义功能扩展。
+
+![](./docs/plugin.png)
+
+上图是我从vue的工程里截取的，它用到这么多插件，webpack的插件就是类似这么配置的，可以看到plugins是一个数组，那么问题来了，这些插件之间有顺序关系吗？
+
+要解开这个疑问，先从调试webpack构建流程说起。
+
+#### 调试webpack的运行过程
+
+调试是每个程序员必备的技能，作为前端开发，我们调试客户端脚本离不开chrome devtools。但webpack的运行是跑在Node环境的，并不是浏览器环境。所以Node脚本如何调试呢？
+
+最早我们可能会用console.log或者node-inspector，但2016年，Node@6.3版本内置了v8-inspector，正式确定了将chrome devtools作为官方的Node调试工具，使得Node脚本也可以使用chrome devtools的图形界面调试，大大方便了开发者。
+
+**如何调试Node脚本**
+
+```bash
+node xxx.js
+```
+
+首先我们知道可以通过上面的命令使用Node来执行js脚本。我们继续用之前的index.js文件。
+
+```js
+// src/index.js
+console.log('hello webpack')
+```
+```bash
+node ./src/index.js
+```
+
+执行上面的命令后，就使用node执行了index.js文件，在控制台输出了"hello webpack"。现在我们来调试这个过程。
+
+```bash
+node --inspect-brk ./src/index.js
+```
+![](./docs/debugger-1.png)
+
+可以看到控制台提示Debugger listening on ...表示成功启动调试了。这时打开chrome devtools，可以看到如下图所示的绿色Node图标摁钮，出现这个表示当前有能够调试的Node程序。点击就可以进入代码调试环境，并断在第一行。
+
+![](./docs/debugger-3.png)
+
+除此之外，当成功启动调试后，也可以在chrome地址栏键入 chrome://inspect或者about:inspect，回车后就可以看到下面的界面。点击inspect就会进入代码调试环境，并断在第一行。效果和刚才是一样的。两种方式都可以打开调试Node的环境。
+
+![](./docs/debugger-2.png)
+
+可以看到Node中的执行的index.js代码就可以使用chrome devtools来调试了。
+
+![](./docs/debugger-4.png)
+
+上面示例中，--inspect-brk 参数是Node启动调试模式必需的。它会在Node开始执行时就断下来，特别适用于那些只是处理某个任务，运行完就终止的脚本。对于那些会一直在后台运行的服务脚本，可以使用--inspect就可以了，这个命令参数和--inspect-brk的区别是它不会自动断在第一行。
+
+**如何调试webpack的运行过程**
+
+```bash
+npm run start
+```
+
+```json
+"scripts": {
+    "start": "webpack --config webpack.config.js"
+}
+```
+ 通过`npm run start`启动webpack构建时，实际执行的是
+ 
+ `webpack --config webpack.config.js`
+ 
+ webpack是本地安装的模块，所以它等价于
+ 
+ `node ./node_modules/webpack/bin/webpack.js --config webpack.config.js`
+
+ >上面的等价关系不懂的请参考[通过npm包来制作命令行工具的原理](https://segmentfault.com/a/1190000015218126)
+
+于是，按照我们刚才介绍的调试Node的方法，增加--inspect-brk参数：
+
+```json
+"scripts": {
+    "start": "node --inspect-brk ./node_modules/webpack/bin/webpack.js --config webpack.config.js
+"
+}
+```
+```bash
+npm run start
+```
+好了，现在你可以深入到webpack的海洋里遨游了！**调试webpack执行过程是打通任督二脉的第二个秘诀！**
+
+
+#### 理解plugin从编写一个plugin开始
+
+
+#### 从plugin的运行机制看webpack的全生命周期
+
 ### 其它
 
-## 如何使用Webpack做长效缓存
+## 如何使用webpack做长效缓存
 
 ## 参考文献
 
