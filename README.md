@@ -1,0 +1,737 @@
+# 打通任督二脉之webpack 4.x从入门到精通
+
+## 前言
+
+首先我们来分析一下这篇文章的标题：《打通任督二脉之webpack 4.x从入门到精通》，它不是webpack从入门到精通的教程，因为但凡了解的人都知道webpack的强大，强大到不是通过一篇或者几篇文章就能从入门到精通的，所以我在前面加了前缀：打通任督二脉！我希望的是通过这个文章，能打通你对webpack的任督二脉，找到从入门到精通的方法，然后通过持之以恒的练习，来达到精通webpack的目的。所以本文是介绍精通webpack的方法，而不是介绍精通webpack本身。
+
+## 关于Webpack
+
+在介绍webpack之前，我们先简单回顾一下前端的发展历史。前端的蓬勃发展得益于Google 的V8引擎。2008年9月2号，当Chrome第一次出现的时候（V8与Chrome同一天宣布开源），它对网页的加载速度让所有人惊叹，是V8引擎把JavaScript的运行速度提上来了，让前端从蒸汽机机时代正式步入内燃机时代。
+
+如下图所示，早在Chrome发布之初的介绍漫画书中就有提到V8是独立于浏览器之外的，明确了将V8嵌入到非浏览器项目中的可能性，并且Node.js做到了！2009年诞生的Node.js和2010年诞生的npm,迅速将JavaScript变成全球最受欢迎的生态系统之一。前端正式从石器时代进入到了工业化时代。
+
+![](./docs/v8.jpg)
+
+
+但紧接着问题也随之而来：CommonJS伴随Node.js问世，并引入了require包管理机制，它允许开发者在当前文件中加载和使用某个模块，CommonJS 是 Node.js项目的绝佳解决方案，但浏览器不支持，(请参考[前端模块化](https://docs.google.com/presentation/d/1VACp58xC5hJesneskKQZ2zbv5YfbbzT7tlMGQeXyBh8/edit#slide=id.g4fecafb3d3_0_15))。并且随着ECMAScript Module标准的制定，浏览器厂商跟不上前端迅猛发展的节奏，新的规范和标准浏览器不支持！于是开发者们就在探索是否可以有一种方式，让开发者在编写模块时可以使用最新的标准，并且支持任意模块规范，还能在当下的浏览器上正常使用。这就是webpack出现的原因。
+
+**它是如此！但远不止于此！** 
+
+它是一个工具，可以打包你的 JavaScript 应用程序（支持ESModule 和 CommonJS），可以扩展为支持许多不同的资源，例如：图片、字体、样式等等。webpack还关心性能和加载时间；它始终在改进和添加新功能，例如：异步模块加载，以便为不同项目和用户提供最佳体验。
+
+## Webpack 4.x 从入门到精通
+
+首先介绍一下webpack的[官方文档](https://webpack.js.org/concepts)，它分为Concepts（概念）、Guides（指南）、Configuration（配置）、Loaders（加载器）、Plugins（插件）、Api（接口）、Migrate（迁移）七个部分。
+
+**Concepts**中介绍了webpack相关的概念，一定要先熟悉，不然文档可能会看不懂，因为文档中会提到，当然不用刚开始就把所有的概念都弄得非常清楚，可以在阅读文档学习webpack的过程中碰到不明白的概念，回到Concepts中查阅就好了。
+
+**Guides**中就以实例的形式，一步一步讲解webpack的使用。也应该是最先阅读的部分。
+
+**Configuration**中详细介绍了webpack使用的配置项。了解过webpack的应该知道，webapck主要难点就是配置项比较复杂。
+
+**Loaders**中列举了webpack常用的加载器。webpack默认只能打包JavaScript的，但Loader顾名思义就是为了扩展webpack能够处理的文件类型，通过使用不同的Loader，可以让webpack打包任何静态资源。
+
+**Plugins**中列举了webpack常用的插件。如果说Loader是针对特定类型文件的预处理操作，那么Plugin就是用来完成Loader不能完成的事情，譬如压缩、提取公共代码块等等。
+
+**Api**中主要介绍定制化webpack编译过程会使用到的各种接口。包括开发Loader/Plugin会使用的api以及使用提供给Node使用的接口，来达到对编译的更细粒度的控制。
+
+**Migrate**中主要介绍webpack迁移的方法以及注意事项。需要时看就好了。
+
+
+### 安装
+
+>安装前请确认安装了Node。
+
+创建工程目录，然后在工程目录执行如下命令：
+
+```bash
+npm init
+```
+根据提示一步一步创建npm包，完成后会生成package.json的文件。对此不懂的请参考npm官网对[package.json](https://docs.npmjs.com/files/package.json)的介绍。
+
+```bash
+npm i -D webpack
+npm i -D webpack-cli
+```
+
+>使用webpack 4+的版本，必须安装webpack-cli
+
+然后在项目中建立src文件，并在其中新建index.js文件。在package.json中添加如下构建指令：
+
+```json
+// package.json  
+"scripts": {
+    "start": "webpack"
+}
+```
+
+因为webpack是开箱即用的，刚开始不需要做任何配置，默认从src/index.js寻找入口，输出到dist/main.js文件。所以此时我们执行如下命令：
+
+```bash
+npm run start
+```
+
+可以看到工程目录生成dist文件夹，并且生成了main.js文件。此时会有点奇怪，src/index.js文件并没有任何内容，但dist/main.js却有内容输出，其实这就是webpack的runtime代码，**runtime是指在浏览器运行时，webpack用来管理模块的所有代码，包括模块的加载，解析以及缓存**。也就是说这些代码实现了：**无论你在src/index.js中选择哪种模块语法，import 或 require ，现在都被转换为 __webpack_require__ 方法，从而实现统一的加载和管理。**
+
+>上面加粗的暂时看不懂没关系
+
+### entry&output
+
+虽然webpack提供了开箱即用的功能，指定了默认的入口(src/index.js)和出口(dist/main.js)。但实际项目中我们都会进行配置，满足我们细粒度的打包要求，于是，我们需要新建一个配置文件webpack.config.js。
+
+```js
+// webpack.config.js
+const path = require('path');
+
+module.exports = {
+    entry: './src/index.js',
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, './dist')
+    }
+};
+
+```
+修改package.json中的start指令，增加--config参数，指定刚才新建的配置文件。
+
+>如果 webpack.config.js 在根目录存在，则 webpack 命令将默认选择使用它，也可以不用--config参数指定。
+
+```json
+// package.json
+"scripts": {
+    "start": "webpack --config webpack.config.js"
+}
+```
+在index.js中增加一行代码：
+```js
+// src/index.js
+console.log('hello webpack!')
+```
+执行如下命令，可以看到生成了dist/bundle.js文件。它就是打包好的文件。
+
+```bash
+npm run start
+```
+新建index.html,引入刚生成的bundle.js文件。在浏览器中打开index.html后，控制台中就输出了hello webpack。
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>hello webpack</title>
+</head>
+<body>
+    <script src="./dist/bundle.js"></script>
+</body>
+</html>
+```
+**接下来是重点！接下来是重点！接下来是重点！**
+
+新建m.js，同时修改index.js，引入m模块。 **打包后，在浏览器调试，看看webpack是如何加载模块的。**
+
+>由于webpack4默认是压缩代码的，为了方便阅读webpack的runtime源码，我们把默认的压缩去掉。
+
+```js
+// src/m.js
+exports.log = function (info) {
+    console.log(info);
+}
+// src/index.js
+var log = require('./m').log;
+log('load m module');
+
+// webpack.config.js。为了去掉默认的压缩
+module.exports = {
+    optimization: {
+        minimizer: []
+    }
+};
+
+```
+**一定要调试！一定要调试！一定要调试！** 通过调试去学习webpack runtime的源码。通过学习最基础的runtime源码，一定会让你醍醐灌顶，茅塞顿开。
+
+**这是打通任督二脉的第一个秘诀！**
+
+刚才我们调试了CommonJS(请参考[前端模块化](https://docs.google.com/presentation/d/1VACp58xC5hJesneskKQZ2zbv5YfbbzT7tlMGQeXyBh8/edit#slide=id.g4fecafb3d3_0_15))模块规范下，webpack的加载方式，现在我们把m.js的内容改成ESModule的规范，再打包调试。
+
+>此时是m.js是ESModule模块标准导出，index.js使用CommonJS模块标准导入
+
+```js
+// src/m.js
+export function log(info) {
+    console.log(info);
+}
+```
+打包好后，**一定要调试！一定要调试！一定要调试！** 
+
+然后把m.js还原为CommonJS的标准，index.js使用ESModule的标准导入。
+
+```js
+ // src/m.js
+ exports.log = function (info) {
+     console.log(info);
+ }
+ 
+ // src/index.js
+ import { log } from './m';
+ log('load m module');
+
+```
+
+打包好后，**一定要调试！一定要调试！一定要调试！** 
+
+最后index.js 和 m.js 都使用ESModule的模块规范：
+
+```js
+ // src/m.js
+ export function log(info) {
+    console.log(info);
+ }
+ 
+ // src/index.js
+ import { log } from './m';
+ log('load m module');
+
+```
+打包好后，**一定要调试！一定要调试！一定要调试！** 
+
+我们调试完webpack的runtime代码后，基本能得出如下结论：
+
+1. 不管用CommonJS的require&exports 还是ESModule的import&export，webpack都是转化为__webpack_require__方法来加载的
+2. __webpack_require__更接近CommonJS的实现。
+3. 对于ESModule规范的模块，会特殊处理，通过Object.defineProperty加上相应的__esModule的属性标识
+4. import&export虽然是ESModule的规范，但却不需要Babel转码，可以webpack下开箱即用
+
+>附上webpack runtime的源码
+
+```js
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./src/m.js
+
+function log (info) {
+    console.log(info);
+}
+// CONCATENATED MODULE: ./src/index.js
+console.log('hello webpack')
+
+
+log('load m module');
+
+/***/ })
+/******/ ]);
+```
+
+### loader
+
+#### loader介绍
+
+loader 用于对模块的源代码进行转换。loader可以在 import 或者 require 模块时预处理文件。上一节已经看到如何加载一个模块了，但我们并没有配置loader啊，原因是webpack能默认处理javascript文件。如果要加载其它类型的文件就需要配置相应类型的loader。譬如 像如下一份常用的loader配置：
+
+```js
+// webpack.config.js
+const path = require('path');
+
+module.exports = {
+    entry: './src/index.js',
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, './dist')
+    },
+    optimization: {
+        minimizer: []
+    },
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                loader: 'babel-loader',
+                include: [path.resolve(__dirname, '../src')]
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    name: path.posix.join('static', 'img/[name].[hash:7].[ext]')
+                }
+            },
+            {
+                test: /\.sass$/,
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            sourceMap: true
+                        }
+                    },
+                    'sass-loader'
+                ]
+            }
+        ]
+    }
+};
+
+```
+如上所示，loaders的配置方法比较灵活，详细可以参考官网文档[介绍Loader](https://webpack.js.org/concepts/loaders)的章节。项目中用到什么类型的的文件，就安装并配置相应的loader就好了，不同loader如何使用要case by case的看。
+
+有一点需要注意：某种类型的文件，可能需要多个loader处理，所以loader是支持链式调用的，有点类似与gulp中的pipeline。**一组loader将按照相反的顺序执行**。例如上例中对.sass文件的处理，首先经过sass-loader的处理，完了后交给css-loader处理，最后交给style-loader处理。sass-loader用来处理sass语法，转化为css。css-loader用来处理css中的@import&url()。sytle-loader用于将css插入到DOM中的`<style>`标签上去。
+
+我们重点看下babel-loader的使用，通过它可以举一反三。
+
+#### babel-loader
+
+刚才说了webpack的loader的作用，对应的babel-loader就是用来处理ES6+的语法，把ES的新特性转化为浏览器支持的，可以执行的js语法，**注意我的用词哈，我说的不是转化为ES5。因为不同类型的以及不同版本的浏览器对ES新特性的支持程度都不一样，对于浏览器已经支持的部分，我们可以不转化，所以Babel会依赖浏览器的版本，后面会讲到。**  这里可以先请参考后面会用到的[browerslist](https://twitter.com/browserslist)项目。
+
+首先Babel([官网](https://babel.docschina.org/docs/en/))是独立与webpack的，它可以应用于任何打包工具，或者在Node Cli直接使用。所以在webpack中使用就分为两个部分：
+
+- 一是安装和配置babel-loader 
+- 二是安装和配置Babel
+
+我们先建立一个测试文件testBabel.js，用ES6语法写的模块。这样在后面逐步的配置过程中，能方便的看到编译的结果。index.js中导入testBabel.js这个模块。
+
+```js
+// src/testBabel.js
+setTimeout(() => {
+    let a = 'morrain';
+    let b = 'morrain2';
+    console.log(`timer done! ${a} do it`);
+    console.log(a + b);
+}, 1000);
+
+let array = [1, 2, 3, 4, 5, 6];
+array.includes(item => item > 2);
+
+let tpx = new Promise((resolve, reject) => {
+    console.log('new Promise done');
+});
+
+Object.assign({}, {
+    a: 1,
+    b: 2
+});
+
+// src/index.js
+console.log('hello webpack')
+import './testBabel';
+```
+运行如下命令打包，发现打完包的模块，没有经过任何编译，ES6的语法原封未动。但用最新的chrome浏览器打开，是能完全正常执行的，因为最新的chrome浏览器是支持这样特性的。
+
+```bash
+npm run start
+```
+![webpack-babel](./docs/webpack-babel.png)
+
+
+##### 安装和配置babel-loader 
+
+```bash
+npm i -D babel-loader
+```
+
+```js
+// webpack.config.js
+module.exports = {
+    entry: './src/index.js',
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, './dist')
+    },
+    optimization: {
+        minimizer: []
+    },
+    module: {
+        rules: [//增加对js文件使用babel-loader进行解析的配置
+            {
+                test: /\.js$/,
+                loader: 'babel-loader',
+                include: [path.resolve(__dirname, './src')]
+            }
+        ]
+    }
+};
+
+```
+
+>上面的include对于性能提升比较重要，它限定了使用babel-loader进行处理的模块范围，因为项目中难免会用到很多第三方的npm包，我们并不希望处理这些内容。也可以使用exclude参数
+
+##### 安装和配置Babel
+
+上面配置好babel-loader后打包会报错，因为我们还需要安装和配置Babel。可以参考Babel([官网](https://babel.docschina.org/docs/en/))
+
+1. Babel的历史
+
+简单讲Babel就是javascript的编译器，将ES6+转换成浏览器支持的、可执行的js语法。它的前身是6to5这个库，2014年发布主要是将ES6转成ES5，它使用的AST(抽象语法树)引擎是一个更古老的库`acorn`。2015年2月15号，6to5与另一个Esnext项目合并，并改名为了Babel。这里确实要感叹一下，Babel这个名字起的是真好，Babel是巴比伦文化里面的通天塔，贴切得很。羡慕有一些牛逼的人，代码写得好不说，还这么有文化。不像我们，为了起个变量名，都要憋上半天，吃了没有文化的亏。
+
+![](./docs/babel-history.jpeg)
+
+2. Babel的使用
+
+在安装和配置Babel之前，我们先了解一下[Babel的设计与组成](https://mp.weixin.qq.com/s?__biz=MzAwOTkzNDc0Mg==&mid=2247483750&idx=1&sn=c90e95159199ac7aa2612207e89e9182&chksm=9b59439fac2eca89bc558fd2a360408bf8e8a928688963f7f21a5e17ae2ae678f8265a8003aa)。
+
+上面的文章一定要看，总结一下：
+
+- @babel/core AST转换的核心
+- @babel/cli  打包工具
+- @babel/plugin* Babel插件机制，Babel基础功能不满足的时候,手动添加些
+- @babel/preset-env 把许多 @babel/plugin 综合了下，减少配置
+- @babel/polyfill 把浏览器某些不支持api，导入到项目中，可以全部导入，也可以按需导入
+- @babel/runtime  解决polyfill直接修改api带来的因模块复用导致冲突的问题
+
+本文是基于Babel7的，文末我会把全部依赖的包的版本放出来。
+
+**安装Babel的核心模块以及插件集合。** 然后打包正常，但打包出来的文件中，ES6+的语法并没有被转化。
+
+```bash
+npm i -D @babel/core @babel/preset-env
+```
+
+在项目根目录增加Babel配置文件。也可以使用.bablerc，但现在官网推荐使用js文件的方式配置
+
+```js
+// babel.config.js
+module.exports = function (api) {
+    api.cache(true);
+
+    const presets = [
+        [
+            "@babel/env",
+            {
+                debug: true
+            }
+        ]
+    ];
+    const plugins = [];
+
+    return {
+        presets,
+        plugins
+    };
+}
+```
+@babel/preset-env 参数非常多，可以参考官网介绍[@babel/preset-env](https://babel.docschina.org/docs/en/babel-preset-env)的文档。这里的debug设置为true后，可以在命令行终端打印用了@babel/preset-env中哪些插件，进而知道哪些语法做了转换。
+
+至此，最基础的Bable就配置好了，赶紧打包调试一下，看看变化吧。
+
+```js
+// src/testBable.js
+setTimeout(() => {
+    let a = 'morrain';
+    let b = 'morrain2';
+    console.log(`timer done! ${a} do it`);
+    console.log(a + b);
+}, 1000);
+
+let array = [1, 2, 3, 4, 5, 6];
+array.includes(item => item > 2);
+
+let tpx = new Promise((resolve, reject) => {
+    console.log('new Promise done');
+});
+
+Object.assign({}, {
+    a: 1,
+    b: 2
+});
+
+// dist/bundle.js
+setTimeout(function () {
+  var a = 'morrain';
+  var b = 'morrain2';
+  console.log("timer done! ".concat(a, " do it"));
+  console.log(a + b);
+}, 1000);
+var array = [1, 2, 3, 4, 5, 6];
+array.includes(function (item) {
+  return item > 2;
+});
+var tpx = new Promise(function (resolve, reject) {
+  console.log('new Promise done');
+});
+Object.assign({}, {
+  a: 1,
+  b: 2
+});
+
+```
+通过转化前后对比我们可以看到，let变成了var，箭头函数变成了普通函数，字符串模板变成了字符串函数等等。
+但细心的同学一定发现了，Promise、includes和assign并没有被转化，为什么呢？
+
+原来Babel把ES6+的规范分为语法(syntax)和接口(api)两个部分。像箭头函数、let、const、class等等，这些是属于语法的，但像includes、map、Promise这些可以重写的归属到接口了。**Babel默认只负责转化语法**。这些接口层面的，Babel单独用polyfill来处理。
+
+polyfill 直译的话是垫片的意思，来处理类似 assign、map、includes、Promise这些浏览器可能没有的方法 最直接的办法的是 根据一份浏览器不兼容的表格(这个browserslist已经完成了)，把对应浏览器不支持的语法全部重新写一遍，类似下面这样:
+
+```js
+  if (typeof Object.assign != 'function') {
+      Object.defineProperty(Object, "assign", 
+      ·····
+  }
+  if (!Array.prototype.includes){
+     Object.defineProperty(Array.prototype, 'includes',
+      ·····
+  }
+  if (!Array.prototype.every){
+     Object.defineProperty(Array.prototype, 'every',
+      ·····
+  }
+```
+Babel这个设计是非常好的，很好的解耦了ES6+中能重写的api和不能重写的syntax，后面根据浏览器版本支持情况来做适配非常方便。
+
+**接下来我们安装polyfill。**
+
+```bash
+npm i -s @babel/polyfill 
+```
+
+> **注意从polyfill的原理，我们清楚polyfill是对浏览器不支持的方法进行了重写，那这个重写的代码是要打包到输出文件的，所以polyfill要安装到dependencies而不是devDependencies。** 更多信息请参考[npm官网文档](https://docs.npmjs.com/packages-and-modules/)
+
+安装完后打包，发现是没有效果的，控制台会打出一个提示：
+```bash
+Using polyfills: No polyfills were added, since the `useBuiltIns` option was not set.
+```
+这个参数就是刚才说到的 @babel/preset-env 的一个参数，默认值是false，表示啥也不干，也就是我们现在情况。还有两个选项：'entry'和'usage'。entry表示在打包入口一次性引入polyfill，然后webpack会把浏览器不支持的api全部打包进去。useage表示按需加载，它会检查源码中使用到了哪些不支持的api，然后把使用到的api垫片加载进来。当然是用usage比较好，唯一不好的就是打包时多了源码检查这个操作，增加了打包的消耗而已。
+
+先来看entry的情况：
+
+```js
+// babel.config.js
+module.exports = function (api) {
+    api.cache(true);
+
+    const presets = [
+        [
+            "@babel/env",
+            {
+                debug: true,
+                useBuiltIns: 'entry'//新加的参数
+            }
+        ]
+    ];
+    const plugins = [];
+
+    return {
+        presets,
+        plugins
+    };
+}
+// src/index.js
+console.log('hello webpack')
+import "@babel/polyfill";//新加的导入
+
+import './testBabel';
+
+```
+![](./docs/webpack-polyfill-entry.png)
+
+可以看到，100多个垫片api被引入。实际只用到了几个而已。
+
+再来看看usage的情况：
+
+```js
+// babel.config.js
+module.exports = function (api) {
+    api.cache(true);
+
+    const presets = [
+        [
+            "@babel/env",
+            {
+                debug: true,
+                useBuiltIns: 'usage'//新加的参数
+            }
+        ]
+    ];
+    const plugins = [];
+
+    return {
+        presets,
+        plugins
+    };
+}
+// src/index.js
+console.log('hello webpack')
+
+import './testBabel';
+
+```
+使用usage的方式，不需要在项目入口手动导入polyfill，所以去掉index.js中的代码，并把useBuiltIns设置为usage。
+
+![](./docs/webpack-polyfill-usage.png)
+
+可以看到，只有使用到的垫片api才被引入。
+
+刚才使用polyfill的usage模式貌似完美解决了对ES6+的api的支持，但是依然从polyfill的实现原理来看，它是通过重写这些api的实现，这在应用开发中问题不大，但如果在库、工具中的开发中引入polyfill就会带来潜在问题。试想一下有一个工具使用了polyfill(假设polyfill了Promise实现)，现在隔壁的小伙刚好搜到这个工具包，下下来在他的项目里使用，这本来没问题，但如果这个小伙的项目里自己实现了Promise，这就坏了，这就冲突了！！！如下图所示：
+
+![](./docs/webpack-babel-runtime.png)
+
+这个场景很常见，那怎么办呢？Babel针对这种场景开发了babel-runtime。它包括了两个模块:
+
+- babel-plugin-transform-runtime 用于构建过程的代码转换
+- babel-runtime 是实际导入项目代码的功能模块
+
+它实现的原理是把所有需要支持的api，譬如Promise实现为_Promise，然后组件内部使用_Promise，这样就和组件外面做了隔离。
+
+**使用babel-runtime替换polyfill**        
+
+参考[官网文档](https://babel.docschina.org/docs/en/babel-plugin-transform-runtime)
+
+```bash
+// 安装@babel/plugin-transform-runtime到devDependencies
+npm i -D @babel/plugin-transform-runtime  
+
+// 安装@babel/runtime-corejs2 到 dependencies
+npm i -s @babel/runtime-corejs2   
+
+// 去掉@babel/polyfill    
+npm uninstall @babel/polyfill             
+```
+
+```js
+// babel.config.js
+module.exports = function (api) {
+    api.cache(true);
+
+    const presets = [
+        [
+            "@babel/env",
+            {
+                debug: true//去掉了useBuiltIns参数，不再使用polyfill
+            }
+        ]
+    ];
+    const plugins = [
+        [
+            "@babel/plugin-transform-runtime",//新增加babel-runtime插件
+            {
+                "corejs": 2
+            }
+        ]
+    ];
+
+    return {
+        presets,
+        plugins
+    };
+}
+
+```
+打包编译之后，如下图所示，可见全局的Promise变成了局部变量promise_default.a了。
+
+![](./docs/webpack-babel-runtime2.png)
+
+>虽然polyfill在开发非工具包时问题不大，但是还是推荐大家所有项目都使用babel-runtime的方式。
+
+现在我们就完成了对babel-loader的所有配置，其它loader的使用方式的学习都类似，找相应loader的文档，进行安装和配置就好了。**方法是相通的，方法是相通的，方法是相通的。一定要通过调试去深入研究编译前后的变化。这是精通webpack的第二个秘诀**
+
+### plugin
+### 其它
+
+## 如何使用Webpack做长效缓存
+
+## 参考文献
+
+[V8 十年故事：从农场诞生的星球最强 JS 引擎](https://v8.dev/blog/10-years)
+
+[webpack中文文档](https://www.webpackjs.com/concepts/)
+
+[Babel学习系列-polyfill和runtime差别(必看)](https://zhuanlan.zhihu.com/p/58624930)
+
+[前端工程基础知识点--Browserslist](https://juejin.im/post/5b8cff326fb9a019fd1474d6)
+
+[Babel,Babylon维基百科]
+
