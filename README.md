@@ -870,9 +870,52 @@ complier.hooks中存了所有complier的钩子，上例中注册了done的钩子
 
 如示例所示，使用了tap方法，因为done这个hook是同步的，它不允许这个钩子的回调中有异步操作。所以使用tap方法，但**有一些钩子是异步的**，譬如emit，它表示编译完成要输出资源文件之前的钩子，它被设计成异步的，因为webpack觉得开发者可能需要在这个过程中间去写一些额外文件的异步操作，**webpack必须等到异步操作完成，由plugin主动交回控制权。** 此时就要用到tapAsync或者Promise。下面是tapAsync和tapPromise的示例：
 
+```js
+// build/CustomPlugin.js
 
+class HelloWebpackPlugin {
+    constructor(params) {
+        console.log('HelloWebpackPlugin init: params=', params)
+    }
+    apply(compiler) {
+
+        const plugin_name = 'HelloWebpackPlugin';
+        //complier.hooks里有所有complier的钩子，这里注册了done的事件，表示当webpack构建完成时触发
+        compiler.hooks.done.tap(plugin_name, stats => {
+            console.log('HelloWebpackPlugin: webpack done! ');
+        });
+
+        compiler.hooks.emit.tapAsync(plugin_name, (compilation, callback) => {
+            // 做一些异步的事情……
+            setTimeout(function () {
+                console.log('Done with async work...');
+                callback();
+            }, 1000);
+        });
+
+        compiler.hooks.emit.tapPromise(plugin_name, compilation => {
+            // 返回一个 Promise，在我们的异步任务完成时 resolve……
+            return new Promise(resolve => {
+                setTimeout(function () {
+                    console.log('异步工作完成……');
+                    resolve();
+                }, 1000);
+            });
+        });
+    }
+}
+
+module.exports = HelloWebpackPlugin;
+```
+>因为webpack同时会应用很多plugin，也就是说同一个hook可以被不同的plugin订阅，所以在订阅hook时，把plugin_name传入作为区分。
+
+一定要注意，对于tapAsync，一定要执行callback的回调，对于tapPromise，一定要执行resolve，必须通过这样讲控制权交回webpack，不然webpack不会往下执行的。
+
+现在可以回答之前那个问题了，plugins有顺序吗？答案是有！但仅限于两个plugin注册同一个hook时，hook触发时有先后之后。
 
 #### 从plugin的运行机制看webpack的全生命周期
+
+
 
 ### 其它
 
