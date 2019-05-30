@@ -803,10 +803,73 @@ npm run start
 ```bash
 npm run start
 ```
-好了，现在你可以深入到webpack的海洋里遨游了！**调试webpack执行过程是打通任督二脉的第二个秘诀！**
+好了，天高任鸟飞，海阔凭鱼跃，我告诉你海在哪里，游要靠你自己！现在你可以深入到webpack的海洋里遨游了！**调试webpack执行过程是打通任督二脉的第二个秘诀！**
 
+>对于使用vscode的同学，可以直接使用vscode在编辑器里调试的，不会可以参考[使用vscode调试npm scripts](https://www.jianshu.com/p/8b034954abc9)
 
 #### 理解plugin从编写一个plugin开始
+
+了解过Vue或者React的同学应该都知道，这些框架库都有生命周期钩子，用来在不同的生命周期阶段开放给开发者做自己要做的事情，webpack也一样。通过插件，开发者能够获取webpack引擎完整的能力，在不同的生命周期引入特定的行为到webpack的构建流程中。所以一个插件最核心的操作就是对webpack生命周期钩子的事件订阅。
+
+**编写插件**
+
+webpack插件由以下要素组成：
+
+- 一个javascript函数
+- 该函数原型上添加apply方法
+- 订阅webpack生命周期钩子
+- 干想干的事情(操作webpack内部实例的数据)
+- 控制权交回给webpack
+
+
+![](./docs/webpack-plugin.png)
+一图胜千言，上图中有两个红色加粗的概念complier和complilation，理解它们俩的角色对于开发plugin来说是非常重要的。
+
+**compiler** 是plugin的apply接口传进来的参数，它代表了完整的 webpack 环境配置。这个对象在启动 webpack 时被一次性建立，并配置好所有可操作的设置，包括 options，loader 和 plugin。当在 webpack 环境中应用一个插件时，插件将收到此 compiler 对象的引用，可以使用它来访问 webpack 的主环境。对于 plugin 而言，**通过它来注册事件钩子**
+
+**compilation** 对象代表了一次资源版本构建。当运行 webpack 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 compilation 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息。对于plugin而言，**通过它来完成数据的处理**
+
+新建一个build文件夹，然后新建一个CustomPlugin.js文件。修改webpack.config.js，使用CustomPlugin这个插件。
+
+```js
+// build/CustomPlugin.js
+
+class HelloWebpackPlugin {
+    constructor(params) {
+        console.log('HelloWebpackPlugin init: params=', params)
+    }
+    apply(compiler) {
+        //complier.hooks里有所有complier的钩子，这里注册了done的事件，表示当webpack构建完成时触发
+        compiler.hooks.done.tap('HelloWebpackPlugin', stats => {
+            console.log('HelloWebpackPlugin: webpack done!');
+        });
+    }
+}
+module.exports = HelloWebpackPlugin;
+
+```
+
+```js
+// webpack.config.js
+
+const HelloWebpackPlugin = require('./build/CustomPlugin');
+
+module.exports = {
+    ...
+    plugins: [
+        new HelloWebpackPlugin()
+    ]
+};
+
+```
+使用刚才介绍的调试Node的方法进行断点调试吧。
+
+complier.hooks中存了所有complier的钩子，上例中注册了done的钩子，表示当webpack编译完成时会被触发，stats是该钩子传出来的参数，**不同的钩子传出来的参数不同**，更多钩子的信息可以查阅[官网文档相关介绍](https://webpack.js.org/api/compiler-hooks)
+
+如示例所示，注册钩子时，使用了tap方法，它又是什么呢？我们先了解一下Tapable,Tapable是webpack的一个核心工具，webpack中许多对象扩展自Tabable类，这个类暴露了tap、tapAsync、tapPromise方法，webpack hook便是如此，在webpack hook上就能使用这些方法注入自定义的构建步骤，这些步骤在整个编译过程中的相应时机触发。
+
+如示例所示，使用了tap方法，因为done这个hook是同步的，它不允许这个钩子的回调中有异步操作。所以使用tap方法，但**有一些钩子是异步的**，譬如emit，它表示编译完成要输出资源文件之前的钩子，它被设计成异步的，因为webpack觉得开发者可能需要在这个过程中间去写一些额外文件的异步操作，**webpack必须等到异步操作完成，由plugin主动交回控制权。** 此时就要用到tapAsync或者Promise。下面是tapAsync和tapPromise的示例：
+
 
 
 #### 从plugin的运行机制看webpack的全生命周期
@@ -826,4 +889,6 @@ npm run start
 [前端工程基础知识点--Browserslist](https://juejin.im/post/5b8cff326fb9a019fd1474d6)
 
 [Babel,Babylon维基百科]
+
+[write a webpack plugin](https://webpack.js.org/contribute/writing-a-plugin/)
 
