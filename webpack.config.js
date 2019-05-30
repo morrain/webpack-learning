@@ -1,6 +1,7 @@
 'use strict'
 
 const path = require('path');
+const HelloWebpackPlugin = require('./build/CustomPlugin');
 
 module.exports = {
     entry: './src/index.js',
@@ -19,5 +20,8 @@ module.exports = {
                 include: [path.resolve(__dirname, './src')]
             }
         ]
-    }
+    },
+    plugins: [
+        new HelloWebpackPlugin()
+    ]
 };
