@@ -2,7 +2,7 @@
 
 ## 前言
 
-首先我们来分析一下这篇文章的标题：《打通任督二脉之webpack 4.x从入门到精通》，它不是webpack从入门到精通的教程，因为但凡了解的人都知道webpack的强大，强大到不是通过一篇或者几篇文章就能从入门到精通的，所以我在前面加了前缀：打通任督二脉！我希望的是通过这个文章，能打通你对webpack的任督二脉，找到从入门到精通的方法，然后通过持之以恒的练习，来达到精通webpack的目的。所以本文是介绍精通webpack的方法，而不是介绍精通webpack本身。
+首先来分析一下这篇文章的标题：《打通任督二脉之webpack 4.x从入门到精通》，它不是webpack从入门到精通的教程，因为但凡了解的人都知道webpack的强大，强大到不是通过一篇或者几篇文章就能从入门到精通的，所以我在前面加了前缀：打通任督二脉！我希望的是通过这个文章，能打通你对webpack的任督二脉，找到从入门到精通的方法，然后通过持之以恒的练习，来达到精通webpack的目的。所以本文是介绍精通webpack的方法，而不是介绍精通webpack本身。
 
 ## 关于Webpack
 
@@ -13,7 +13,7 @@
 ![](./docs/v8.jpg)
 
 
-但紧接着问题也随之而来：CommonJS伴随Node.js问世，并引入了require包管理机制，它允许开发者在当前文件中加载和使用某个模块，CommonJS 是 Node.js项目的绝佳解决方案，但浏览器不支持，(请参考[前端模块化](https://docs.google.com/presentation/d/1VACp58xC5hJesneskKQZ2zbv5YfbbzT7tlMGQeXyBh8/edit#slide=id.g4fecafb3d3_0_15))。并且随着ECMAScript Module标准的制定，浏览器厂商跟不上前端迅猛发展的节奏，新的规范和标准浏览器不支持！于是开发者们就在探索是否可以有一种方式，让开发者在编写模块时可以使用最新的标准，并且支持任意模块规范，还能在当下的浏览器上正常使用。这就是webpack出现的原因。
+但紧接着问题也随之而来：CommonJS伴随Node.js问世，并引入了require包管理机制，它允许开发者在当前文件中加载和使用某个模块，CommonJS 是 Node.js项目的绝佳解决方案，但浏览器不支持，(请参考[前端模块化](https://docs.google.com/presentation/d/1VACp58xC5hJesneskKQZ2zbv5YfbbzT7tlMGQeXyBh8/edit#slide=id.g4fecafb3d3_0_15))。并且随着ECMAScript Module标准的制定，浏览器厂商跟不上前端迅猛发展的节奏，新的规范和标准当前的浏览器不支持！于是开发者们就在探索是否可以有一种方式，让开发者在编写模块时可以使用最新的标准，并且支持任意模块规范，还能在当下的浏览器上正常使用。这就是webpack出现的原因。
 
 **它是如此！但远不止于此！** 
 
@@ -36,6 +36,9 @@
 **Api**中主要介绍定制化webpack编译过程会使用到的各种接口。包括开发Loader/Plugin会使用的api以及使用提供给Node使用的接口，来达到对编译的更细粒度的控制。
 
 **Migrate**中主要介绍webpack迁移的方法以及注意事项。需要时看就好了。
+
+
+友情提醒一下：**不要看中文文档，不要看中文文档，不要看中文文档**
 
 
 ### 安装
@@ -71,7 +74,7 @@ npm i -D webpack-cli
 npm run start
 ```
 
-可以看到工程目录生成dist文件夹，并且生成了main.js文件。此时会有点奇怪，src/index.js文件并没有任何内容，但dist/main.js却有内容输出，其实这就是webpack的runtime代码，**runtime是指在浏览器运行时，webpack用来管理模块的所有代码，包括模块的加载，解析以及缓存**。也就是说这些代码实现了：**无论你在src/index.js中选择哪种模块语法，import 或 require ，现在都被转换为 __webpack_require__ 方法，从而实现统一的加载和管理。**
+可以看到工程目录生成dist文件夹，并且生成了main.js文件。此时会有点奇怪，src/index.js文件并没有任何内容，但dist/main.js却有内容输出，其实这就是webpack的runtime代码，**runtime是指在浏览器运行时，webpack用来管理模块的所有代码，包括模块的加载，解析以及缓存**。也就是说这些代码实现了：**无论你在src/index.js中选择哪种模块语法，import 或 require ，现在都被转换为 `__webpack_require__` 方法，从而实现统一的加载和管理。**
 
 >上面加粗的暂时看不懂没关系
 
@@ -200,10 +203,10 @@ export function log(info) {
 
 我们调试完webpack的runtime代码后，基本能得出如下结论：
 
-1. 不管用CommonJS的require&exports 还是ESModule的import&export，webpack都是转化为__webpack_require__方法来加载的
-2. __webpack_require__更接近CommonJS的实现。
-3. 对于ESModule规范的模块，会特殊处理，通过Object.defineProperty加上相应的__esModule的属性标识
-4. import&export虽然是ESModule的规范，但却不需要Babel转码，可以webpack下开箱即用
+1. 不管用CommonJS的`require`&`exports` 还是ESModule的`import`&`export`，webpack都是转化为`__webpack_require__`方法来加载的
+2. `__webpack_require__`更接近CommonJS的实现。
+3. 对于ESModule规范的模块，会特殊处理，通过`Object.defineProperty`加上相应的`__esModule`的属性标识
+4. `import`&`export`虽然是ESModule的规范，但却不需要Babel转码，可以webpack下开箱即用
 
 >附上webpack runtime的源码
 
@@ -320,7 +323,7 @@ log('load m module');
 
 #### loader介绍
 
-loader 用于对模块的源代码进行转换。loader可以在 import 或者 require 模块时预处理文件。上一节已经看到如何加载一个模块了，但我们并没有配置loader啊，原因是webpack能默认处理javascript文件。如果要加载其它类型的文件就需要配置相应类型的loader。譬如 像如下一份常用的loader配置：
+loader 用于对模块的源代码进行转换。loader可以在 `import` 或者 `require` 模块时预处理文件。上一节已经看到如何加载一个模块了，但我们并没有配置loader啊，原因是webpack能默认处理javascript文件。如果要加载其它类型的文件就需要配置相应类型的loader。譬如 像如下一份常用的loader配置：
 
 ```js
 // webpack.config.js
@@ -410,7 +413,7 @@ Object.assign({}, {
 console.log('hello webpack')
 import './testBabel';
 ```
-运行如下命令打包，发现打完包的模块，没有经过任何编译，ES6的语法原封未动。但用最新的chrome浏览器打开，是能完全正常执行的，因为最新的chrome浏览器是支持这样特性的。
+运行如下命令打包，发现打完包的模块，没有经过任何编译，ES6的语法原封未动。但用最新的chrome浏览器打开，是能完全正常执行的，因为最新的chrome浏览器是支持这些特性的。
 
 ```bash
 npm run start
@@ -427,14 +430,7 @@ npm i -D babel-loader
 ```js
 // webpack.config.js
 module.exports = {
-    entry: './src/index.js',
-    output: {
-        filename: 'bundle.js',
-        path: path.resolve(__dirname, './dist')
-    },
-    optimization: {
-        minimizer: []
-    },
+    ……
     module: {
         rules: [//增加对js文件使用babel-loader进行解析的配置
             {
@@ -456,7 +452,7 @@ module.exports = {
 
 1. Babel的历史
 
-简单讲Babel就是javascript的编译器，将ES6+转换成浏览器支持的、可执行的js语法。它的前身是6to5这个库，2014年发布主要是将ES6转成ES5，它使用的AST(抽象语法树)引擎是一个更古老的库`acorn`。2015年2月15号，6to5与另一个Esnext项目合并，并改名为了Babel。这里确实要感叹一下，Babel这个名字起的是真好，Babel是巴比伦文化里面的通天塔，贴切得很。羡慕有一些牛逼的人，代码写得好不说，还这么有文化。不像我们，为了起个变量名，都要憋上半天，吃了没有文化的亏。
+简单讲Babel就是javascript的编译器，将ES6+转换成浏览器支持的、可执行的js语法。它的前身是`6to5`这个库，2014年发布主要是将ES6转成ES5，它使用的AST(抽象语法树)引擎是一个更古老的库`acorn`。2015年2月15号，6to5与另一个`Esnext`项目合并，并改名为了Babel。这里确实要感叹一下，Babel这个名字起的是真好，Babel是巴比伦文化里面的通天塔，贴切得很。羡慕有一些牛逼的人，代码写得好不说，还这么有文化。不像我们，为了起个变量名，都要憋上半天，吃了没有文化的亏。
 
 ![](./docs/babel-history.jpeg)
 
@@ -464,7 +460,7 @@ module.exports = {
 
 在安装和配置Babel之前，我们先了解一下[Babel的设计与组成](https://mp.weixin.qq.com/s?__biz=MzAwOTkzNDc0Mg==&mid=2247483750&idx=1&sn=c90e95159199ac7aa2612207e89e9182&chksm=9b59439fac2eca89bc558fd2a360408bf8e8a928688963f7f21a5e17ae2ae678f8265a8003aa)。
 
-上面的文章一定要看，总结一下：
+上面链接的文章一定要看，总结一下：
 
 - @babel/core AST转换的核心
 - @babel/cli  打包工具
@@ -549,8 +545,8 @@ Object.assign({}, {
 });
 
 ```
-通过转化前后对比我们可以看到，let变成了var，箭头函数变成了普通函数，字符串模板变成了字符串函数等等。
-但细心的同学一定发现了，Promise、includes和assign并没有被转化，为什么呢？
+通过转化前后对比我们可以看到，`let`变成了`var`，箭头函数变成了普通函数，字符串模板变成了字符串函数等等。
+但细心的同学一定发现了，`Promise`、`includes`和`assign`并没有被转化，为什么呢？
 
 原来Babel把ES6+的规范分为语法(syntax)和接口(api)两个部分。像箭头函数、let、const、class等等，这些是属于语法的，但像includes、map、Promise这些可以重写的归属到接口了。**Babel默认只负责转化语法**。这些接口层面的，Babel单独用polyfill来处理。
 
@@ -866,7 +862,7 @@ module.exports = {
 
 complier.hooks中存了所有complier的钩子，上例中注册了done的钩子，表示当webpack编译完成时会被触发，stats是该钩子传出来的参数，**不同的钩子传出来的参数不同**，更多钩子的信息可以查阅[官网文档相关介绍](https://webpack.js.org/api/compiler-hooks)
 
-如示例所示，注册钩子时，使用了tap方法，它又是什么呢？我们先了解一下Tapable,Tapable是webpack的一个核心工具，webpack中许多对象扩展自Tabable类，这个类暴露了tap、tapAsync、tapPromise方法，webpack hook便是如此，在webpack hook上就能使用这些方法注入自定义的构建步骤，这些步骤在整个编译过程中的相应时机触发。
+如示例所示，注册钩子时，使用了tap方法，它又是什么呢？我们先了解一下Tapable,Tapable是webpack的一个核心工具，它实现了事件发布订阅模式处理的插件架构，webpack中许多对象扩展自Tabable类，这个类暴露了tap、tapAsync、tapPromise方法，webpack hook便是如此，在webpack hook上就能使用这些方法注入自定义的构建步骤，这些步骤在整个编译过程中的相应时机触发。
 
 如示例所示，使用了tap方法，因为done这个hook是同步的，它不允许这个钩子的回调中有异步操作。所以使用tap方法，但**有一些钩子是异步的**，譬如emit，它表示编译完成要输出资源文件之前的钩子，它被设计成异步的，因为webpack觉得开发者可能需要在这个过程中间去写一些额外文件的异步操作，**webpack必须等到异步操作完成，由plugin主动交回控制权。** 此时就要用到tapAsync或者Promise。下面是tapAsync和tapPromise的示例：
 
@@ -909,11 +905,202 @@ module.exports = HelloWebpackPlugin;
 ```
 >因为webpack同时会应用很多plugin，也就是说同一个hook可以被不同的plugin订阅，所以在订阅hook时，把plugin_name传入作为区分。
 
-一定要注意，对于tapAsync，一定要执行callback的回调，对于tapPromise，一定要执行resolve，必须通过这样讲控制权交回webpack，不然webpack不会往下执行的。
+一定要注意，对于tapAsync，一定要执行callback的回调，对于tapPromise，一定要执行resolve，必须通过这样的方式将控制权交回webpack，不然webpack不会往下执行的(并行的hook除外)。
 
-现在可以回答之前那个问题了，plugins有顺序吗？答案是有！但仅限于两个plugin注册同一个hook时，hook触发时有先后之后。
+现在再来看刚才抛出来的问题，plugins有顺序吗？答案是有！但仅限于两个plugin注册同一个hook时，hook触发时有先后之后。但就这么简单吗？当然不是，因为hook的类型很多：
+
+![](./docs/hook-types.png)
+
+要搞清楚plugins是否有顺序，以及顺序是怎么样的问题，还要非常清楚这些hook的类型才行。不过这都不是事儿，只要应用之前提到有秘诀，都能搞定。
 
 #### 从plugin的运行机制看webpack的全生命周期
+
+真得不清楚为啥，在webpack官网连一个生命周期图都没有，只能自己画一个简化版的，把一些关键生命周期标示出来。
+
+![](./docs/webpack.png)
+
+根据上面的流程图，我们来分析webpack的全生命周期流程
+
+**webpack入口**
+
+webpack通过Node环境执行，使用webpack.config.js配置文件，执行`./node_modules/webpack/bin/webpack.js`文件。
+
+**webpack初始化**
+
+- 构建compiler对象
+
+    `let compiler = webpack(options)`
+
+- 注册NodeEnvironmentPlugin插件
+
+    `new NodeEnvironmentPlugin().apply(compiler);`
+
+- 注册用户配置中的插件，并使用WebpackOptionsApply处理用户配置
+
+    ```js
+    if (options.plugins && Array.isArray(options.plugins)) {
+        for (const plugin of options.plugins) {
+            if (typeof plugin === "function") {
+                plugin.call(compiler, compiler);
+            } else {
+                plugin.apply(compiler);
+            }
+        }
+    }
+    compiler.hooks.environment.call();
+    compiler.hooks.afterEnvironment.call();
+    compiler.options = new WebpackOptionsApply().process(options, compiler);
+    ```
+
+**run 开始编译**
+
+**compile 触发**
+
+**compilation 生成**  
+
+**make 触发，调用addEntry分析入口文件，并开始创建模块对象**
+
+**构建模块**
+
+首先根据模块的类型获取相应的模块工厂并创建模块，对模块使用loader加载并处理，调用`acorn`解析经过loader处理后的源文件，生成抽象语法树AST。遍历AST，递归查找并构建所有依赖的模块。直至所有模块构建完成，触发finishModules。
+
+**封装构建结果（seal）**
+
+**优化**
+
+依次对每个 module 和 chunk 进行整理，生成编译后的源码，合并，拆分，生成 hash 。 同时这是我们在开发时进行代码优化和功能添加的关键环节。然后通过模板（MainTemplate、ChunkTemplate）把chunk生产__webpack_requie()的格式。
+
+**输出 (emit)**
+
+**完成 (done)**
+
+
+上面只介绍了几个关键的生命周期节点。如果要研究全部的流程怎么办呢？其实很简单，利用之前介绍的开发插件和调试插件的方法，添加相应生命周期的钩子，然后就能直观的看到当时的生命周期上下文。
+
+新建一个自定义插件CompilerHooks。js
+
+```js
+// build/CompilerHooks.js
+class CompilerHooks {
+    constructor() {}
+    apply(compiler) {
+
+        const plugin_name = 'CompilerHooks';
+        const hooks = compiler.hooks;
+
+        hooks.entryOption.tap(plugin_name, (context, entry) => {
+            console.log(`${plugin_name}:entryOption fired!`);
+        });
+
+        hooks.afterPlugins.tap(plugin_name, (compiler) => {
+            console.log(`${plugin_name}:afterPlugins fired!`);
+        });
+
+        hooks.run.tapPromise(plugin_name, compiler => {
+            console.log(`${plugin_name}:run fired!`);
+
+            return new Promise(resolve => {
+
+                setTimeout(() => {
+                    resolve()
+                }, 1000);
+
+            });
+        });
+
+        hooks.compile.tap(plugin_name, compilationParams => {
+            console.log(`${plugin_name}:compile fired!`);
+        });
+        hooks.compilation.tap(plugin_name, (compilation, compilationParams) => {
+            console.log(`${plugin_name}:compilation fired!`);
+
+            const hooks = compilation.hooks;
+
+            hooks.buildModule.tap(plugin_name, module => {
+                console.log(`${plugin_name}:compilation:buildModule fired!`);
+            })
+
+            hooks.optimizeChunks.tap(plugin_name, chunks => {
+                console.log(`${plugin_name}:compilation:optimizeChunks fired!`);
+            })
+
+            hooks.succeedModule.tap(plugin_name, module => {
+                console.log(`${plugin_name}:compilation:succeedModule fired!`);
+            })
+
+            hooks.finishModules.tap(plugin_name, module => {
+                console.log(`${plugin_name}:compilation:finishModules fired!`);
+            })
+
+        });
+
+        hooks.make.tapPromise(plugin_name, compilation => {
+            console.log(`${plugin_name}:make fired!`);
+
+            return new Promise(resolve => {
+
+                setTimeout(() => {
+                    resolve()
+                }, 1000);
+
+            });
+        });
+
+        hooks.afterCompile.tapPromise(plugin_name, compilation => {
+            console.log(`${plugin_name}:afterCompile fired!`);
+
+            return new Promise(resolve => {
+
+                setTimeout(() => {
+                    resolve()
+                }, 1000);
+
+            });
+        });
+
+
+        hooks.emit.tapPromise(plugin_name, compilation => {
+            console.log(`${plugin_name}:emit fired!`);
+
+            return new Promise(resolve => {
+
+                setTimeout(() => {
+                    resolve()
+                }, 1000);
+
+            });
+        });
+
+        hooks.done.tapPromise(plugin_name, stats => {
+            console.log(`${plugin_name}:done fired!`);
+
+            return new Promise(resolve => {
+
+                setTimeout(() => {
+                    resolve()
+                }, 1000);
+
+            });
+        });
+    }
+}
+
+module.exports = CompilerHooks;
+
+```
+```js
+// webpack.config.js
+const CompilerHooks = require('./build/CompilerHooks');
+
+module.exports = {
+    ……
+    plugins: [
+        new CompilerHooks()
+    ]
+};
+```
+
+**通过自定义插件，调试webpack构建的全生命周期。这是第三个精通webpack的秘诀！**
 
 
 
@@ -934,4 +1121,6 @@ module.exports = HelloWebpackPlugin;
 [Babel,Babylon维基百科]
 
 [write a webpack plugin](https://webpack.js.org/contribute/writing-a-plugin/)
+
+[WebPack 插件机制探索](https://blog.didiyun.com/index.php/2019/03/01/webpack/)
 
