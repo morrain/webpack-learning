@@ -2,6 +2,7 @@
 
 const path = require('path');
 const HelloWebpackPlugin = require('./build/CustomPlugin');
+const CompilerHooks = require('./build/CompilerHooks');
 
 module.exports = {
     entry: './src/index.js',
@@ -22,6 +23,7 @@ module.exports = {
         ]
     },
     plugins: [
-        new HelloWebpackPlugin()
+        new HelloWebpackPlugin(),
+        new CompilerHooks()
     ]
 };
