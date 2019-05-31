@@ -1,10 +1,34 @@
 # 打通任督二脉之webpack 4.x从入门到精通
 
-## 前言
+<!-- vscode-markdown-toc -->
+* 1. [前言](#)
+* 2. [关于Webpack](#Webpack)
+* 3. [Webpack 4.x 从入门到精通](#Webpack4.x)
+	* 3.1. [安装](#-1)
+	* 3.2. [entry&output](#entryoutput)
+	* 3.3. [loader](#loader)
+		* 3.3.1. [loader介绍](#loader-1)
+		* 3.3.2. [babel-loader](#babel-loader)
+	* 3.4. [plugin](#plugin)
+		* 3.4.1. [调试webpack的运行过程](#webpack)
+		* 3.4.2. [理解plugin从编写一个plugin开始](#pluginplugin)
+		* 3.4.3. [从plugin的运行机制看webpack的全生命周期](#pluginwebpack)
+	* 3.5. [其它](#-1)
+* 4. [如何使用webpack做长效缓存](#webpack-1)
+* 5. [参考文献](#-1)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+
+
+##  1. <a name=''></a>前言
 
 首先来分析一下这篇文章的标题：《打通任督二脉之webpack 4.x从入门到精通》，它不是webpack从入门到精通的教程，因为但凡了解的人都知道webpack的强大，强大到不是通过一篇或者几篇文章就能从入门到精通的，所以我在前面加了前缀：打通任督二脉！我希望的是通过这个文章，能打通你对webpack的任督二脉，找到从入门到精通的方法，然后通过持之以恒的练习，来达到精通webpack的目的。所以本文是介绍精通webpack的方法，而不是介绍精通webpack本身。
 
-## 关于Webpack
+##  2. <a name='Webpack'></a>关于Webpack
 
 在介绍webpack之前，我们先简单回顾一下前端的发展历史。前端的蓬勃发展得益于Google 的V8引擎。2008年9月2号，当Chrome第一次出现的时候（V8与Chrome同一天宣布开源），它对网页的加载速度让所有人惊叹，是V8引擎把JavaScript的运行速度提上来了，让前端从蒸汽机机时代正式步入内燃机时代。
 
@@ -19,7 +43,7 @@
 
 它是一个工具，可以打包你的 JavaScript 应用程序（支持ESModule 和 CommonJS），可以扩展为支持许多不同的资源，例如：图片、字体、样式等等。webpack还关心性能和加载时间；它始终在改进和添加新功能，例如：异步模块加载，以便为不同项目和用户提供最佳体验。
 
-## Webpack 4.x 从入门到精通
+##  3. <a name='Webpack4.x'></a>Webpack 4.x 从入门到精通
 
 首先介绍一下webpack的[官方文档](https://webpack.js.org/concepts)，它分为Concepts（概念）、Guides（指南）、Configuration（配置）、Loaders（加载器）、Plugins（插件）、Api（接口）、Migrate（迁移）七个部分。
 
@@ -41,7 +65,7 @@
 友情提醒一下：**不要看中文文档，不要看中文文档，不要看中文文档**
 
 
-### 安装
+###  3.1. <a name='-1'></a>安装
 
 >安装前请确认安装了Node。
 
@@ -78,7 +102,7 @@ npm run start
 
 >上面加粗的暂时看不懂没关系
 
-### entry&output
+###  3.2. <a name='entryoutput'></a>entry&output
 
 虽然webpack提供了开箱即用的功能，指定了默认的入口(src/index.js)和出口(dist/main.js)。但实际项目中我们都会进行配置，满足我们细粒度的打包要求，于是，我们需要新建一个配置文件webpack.config.js。
 
@@ -319,9 +343,9 @@ log('load m module');
 /******/ ]);
 ```
 
-### loader
+###  3.3. <a name='loader'></a>loader
 
-#### loader介绍
+####  3.3.1. <a name='loader-1'></a>loader介绍
 
 loader 用于对模块的源代码进行转换。loader可以在 `import` 或者 `require` 模块时预处理文件。上一节已经看到如何加载一个模块了，但我们并没有配置loader啊，原因是webpack能默认处理javascript文件。如果要加载其它类型的文件就需要配置相应类型的loader。譬如 像如下一份常用的loader配置：
 
@@ -377,7 +401,7 @@ module.exports = {
 
 我们重点看下babel-loader的使用，通过它可以举一反三。
 
-#### babel-loader
+####  3.3.2. <a name='babel-loader'></a>babel-loader
 
 刚才说了webpack的loader的作用，对应的babel-loader就是用来处理ES6+的语法，把ES的新特性转化为浏览器支持的，可以执行的js语法，**注意我的用词哈，我说的不是转化为ES5。因为不同类型的以及不同版本的浏览器对ES新特性的支持程度都不一样，对于浏览器已经支持的部分，我们可以不转化，所以Babel会依赖浏览器的版本，后面会讲到。**  这里可以先请参考后面会用到的[browerslist](https://twitter.com/browserslist)项目。
 
@@ -714,7 +738,7 @@ module.exports = function (api) {
 
 现在我们就完成了对babel-loader的所有配置，其它loader的使用方式的学习都类似，找相应loader的文档，进行安装和配置就好了。**方法是相通的，方法是相通的，方法是相通的。一定要通过调试webpack打包后的源码去深入研究编译前后的变化。**
 
-### plugin
+###  3.4. <a name='plugin'></a>plugin
 
 plugin是webpack核心功能，通过plugin webpack可以实现loader所不能完成的复杂功能，使用plugin丰富的自定义[api](https://webpack.js.org/api/plugins)以及[生命周期事件](https://webpack.js.org/api/compiler-hooks)，可以控制webpack编译流程的每个环节，实现对webpack的自定义功能扩展。
 
@@ -724,7 +748,7 @@ plugin是webpack核心功能，通过plugin webpack可以实现loader所不能�
 
 要解开这个疑问，先从调试webpack构建流程说起。
 
-#### 调试webpack的运行过程
+####  3.4.1. <a name='webpack'></a>调试webpack的运行过程
 
 调试是每个程序员必备的技能，作为前端开发，我们调试客户端脚本离不开chrome devtools。但webpack的运行是跑在Node环境的，并不是浏览器环境。所以Node脚本如何调试呢？
 
@@ -803,7 +827,7 @@ npm run start
 
 >对于使用vscode的同学，可以直接使用vscode在编辑器里调试的，不会可以参考[使用vscode调试npm scripts](https://www.jianshu.com/p/8b034954abc9)
 
-#### 理解plugin从编写一个plugin开始
+####  3.4.2. <a name='pluginplugin'></a>理解plugin从编写一个plugin开始
 
 了解过Vue或者React的同学应该都知道，这些框架库都有生命周期钩子，用来在不同的生命周期阶段开放给开发者做自己要做的事情，webpack也一样。通过插件，开发者能够获取webpack引擎完整的能力，在不同的生命周期引入特定的行为到webpack的构建流程中。所以一个插件最核心的操作就是对webpack生命周期钩子的事件订阅。
 
@@ -913,7 +937,7 @@ module.exports = HelloWebpackPlugin;
 
 要搞清楚plugins是否有顺序，以及顺序是怎么样的问题，还要非常清楚这些hook的类型才行。不过这都不是事儿，只要应用之前提到有秘诀，都能搞定。
 
-#### 从plugin的运行机制看webpack的全生命周期
+####  3.4.3. <a name='pluginwebpack'></a>从plugin的运行机制看webpack的全生命周期
 
 真得不清楚为啥，在webpack官网连一个生命周期图都没有，只能自己画一个简化版的，把一些关键生命周期标示出来。
 
@@ -1104,11 +1128,11 @@ module.exports = {
 
 
 
-### 其它
+###  3.5. <a name='-1'></a>其它
 
-## 如何使用webpack做长效缓存
+##  4. <a name='webpack-1'></a>如何使用webpack做长效缓存
 
-## 参考文献
+##  5. <a name='-1'></a>参考文献
 
 [V8 十年故事：从农场诞生的星球最强 JS 引擎](https://v8.dev/blog/10-years)
 
