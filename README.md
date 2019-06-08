@@ -1004,7 +1004,7 @@ webpack通过Node环境执行，使用webpack.config.js配置文件，执行`./n
 
 上面只介绍了几个关键的生命周期节点。如果要研究全部的流程怎么办呢？其实很简单，利用之前介绍的开发插件和调试插件的方法，添加相应生命周期的钩子，然后就能直观的看到当时的生命周期上下文。
 
-新建一个自定义插件CompilerHooks。js
+新建一个自定义插件CompilerHooks.js
 
 ```js
 // build/CompilerHooks.js
