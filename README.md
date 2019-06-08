@@ -1,4 +1,7 @@
+<iframe src="https://slides.com/morrain/deck/embed" width="576" height="420" scrolling="no" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 # 打通任督二脉之webpack 4.x从入门到精通
+
 
 <!-- vscode-markdown-toc -->
 * 1. [前言](#)
@@ -1137,7 +1140,7 @@ module.exports = {
 
 如果提到缓存，你只是停留在知道什么是强缓存、什么是协商缓存，或者你干脆不知道什么是cache-control/max-age/etag/last-modified。很多前端的开发，工作很多年都只是纯粹地在写页面，不懂得如何打包、如何部署、如何做缓存，不懂得什么是HTTP协议，那么在前端的全生命周期里这是不完整的，没有形成一个闭环，缺少了最重要了一步。
 
-
+[未完待续……]
 
 ##  5. <a name='-1'></a>参考文献
 
