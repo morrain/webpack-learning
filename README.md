@@ -888,7 +888,7 @@ module.exports = {
 
 complier.hooks中存了所有complier的钩子，上例中注册了done的钩子，表示当webpack编译完成时会被触发，stats是该钩子传出来的参数，**不同的钩子传出来的参数不同**，更多钩子的信息可以查阅[官网文档相关介绍](https://webpack.js.org/api/compiler-hooks)
 
-如示例所示，注册钩子时，使用了tap方法，它又是什么呢？我们先了解一下Tapable,Tapable是webpack的一个核心工具，它实现了事件发布订阅模式处理的插件架构，webpack中许多对象扩展自Tabable类，这个类暴露了tap、tapAsync、tapPromise方法，webpack hook便是如此，在webpack hook上就能使用这些方法注入自定义的构建步骤，这些步骤在整个编译过程中的相应时机触发。
+如示例所示，注册钩子时，使用了tap方法，它又是什么呢？我们先了解一下Tapable,Tapable是webpack的一个核心工具，它实现了事件发布订阅模式处理的插件架构，webpack中许多对象扩展自Tapable类，这个类暴露了tap、tapAsync、tapPromise方法，webpack hook便是如此，在webpack hook上就能使用这些方法注入自定义的构建步骤，这些步骤在整个编译过程中的相应时机触发。
 
 如示例所示，使用了tap方法，因为done这个hook是同步的，它不允许这个钩子的回调中有异步操作。所以使用tap方法，但**有一些钩子是异步的**，譬如emit，它表示编译完成要输出资源文件之前的钩子，它被设计成异步的，因为webpack觉得开发者可能需要在这个过程中间去写一些额外文件的异步操作，**webpack必须等到异步操作完成，由plugin主动交回控制权。** 此时就要用到tapAsync或者Promise。下面是tapAsync和tapPromise的示例：
 
