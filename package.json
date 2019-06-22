@@ -17,7 +17,8 @@
     "@babel/preset-env": "^7.4.5",
     "babel-loader": "^8.0.6",
     "webpack": "^4.32.2",
-    "webpack-cli": "^3.3.2"
+    "webpack-cli": "^3.3.2",
+    "webpack-merge": "^4.2.1"
   },
   "dependencies": {
     "@babel/runtime-corejs2": "^7.4.5"
