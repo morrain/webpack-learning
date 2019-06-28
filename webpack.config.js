@@ -52,4 +52,4 @@ const targetConf = targets.map(target => webpackMerge(base, {
     }
 }))
 
-module.exports = [base, ...targetConf];
+module.exports = base;

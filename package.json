@@ -4,6 +4,7 @@
   "description": "webpack-demo",
   "main": "src/index.js",
   "scripts": {
+    "webpack": "webpack",
     "start": "node --inspect=5858 ./node_modules/webpack/bin/webpack.js --config webpack.config.js"
   },
   "keywords": [
