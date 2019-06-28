@@ -22,7 +22,6 @@
     "webpack-merge": "^4.2.1"
   },
   "dependencies": {
-    "@babel/runtime-corejs2": "^7.4.5",
-    "jquery": "^3.4.1"
+    "@babel/runtime-corejs2": "^7.4.5"
   }
 }

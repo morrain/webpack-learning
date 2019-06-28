@@ -41,7 +41,10 @@ const base = {
     plugins: [
         new HelloWebpackPlugin(),
         new CompilerHooks()
-    ]
+    ],
+    externals: {
+        jquery: 'jQuery'
+    }
 };
 
 const targetConf = targets.map(target => webpackMerge(base, {
