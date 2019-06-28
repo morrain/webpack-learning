@@ -1,3 +1,4 @@
 console.log('hello webpack')
 
-exports.log = log;
+import $ from "jquery";
+console.log($);
