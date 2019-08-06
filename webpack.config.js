@@ -21,13 +21,11 @@ const webpackMerge = require('webpack-merge');
 const targets = ['var', 'assign', 'this', 'window', 'global', 'commonjs', 'commonjs2', 'amd', 'umd', 'jsonp'];
 
 const base = {
+    mode: 'none',
     entry: './src/index.js',
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, './dist')
-    },
-    optimization: {
-        minimizer: []
     },
     module: {
         rules: [

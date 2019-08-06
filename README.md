@@ -162,7 +162,7 @@ npm run start
 
 新建m.js，同时修改index.js，引入m模块。 **打包后，在浏览器调试，看看webpack是如何加载模块的。**
 
->由于webpack4默认是压缩代码的，为了方便阅读webpack的runtime源码，我们把默认的压缩去掉。
+>由于webpack4默认mode=production,是压缩代码的，为了方便阅读webpack的runtime源码，我们把mode值设置为none，去掉任何默认优化选项。[关于mode的用法](https://webpack.docschina.org/concepts/mode/)
 
 ```js
 // src/m.js
@@ -175,9 +175,7 @@ log('load m module');
 
 // webpack.config.js。为了去掉默认的压缩
 module.exports = {
-    optimization: {
-        minimizer: []
-    }
+    mode:'none'
 };
 
 ```
@@ -230,10 +228,11 @@ export function log(info) {
 
 我们调试完webpack的runtime代码后，基本能得出如下结论：
 
-1. 不管用CommonJS的`require`&`exports` 还是ESModule的`import`&`export`，webpack都是转化为`__webpack_require__`方法来加载的
+1. 不管用CommonJS的`require` 还是ESModule的`import`，webpack都是转化为`__webpack_require__`方法来加载的
 2. `__webpack_require__`更接近CommonJS的实现。
 3. 对于ESModule规范的模块，会特殊处理，通过`Object.defineProperty`加上相应的`__esModule`的属性标识
 4. `import`&`export`虽然是ESModule的规范，但却不需要Babel转码，可以webpack下开箱即用
+5. 单个模块，可以混合使用`require`&`import`，但当出现`import`时，导出必须使用ESModule的`export`规范导出
 
 >附上webpack runtime的源码
 
@@ -330,17 +329,20 @@ export function log(info) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _m__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 
-// CONCATENATED MODULE: ./src/m.js
+Object(_m__WEBPACK_IMPORTED_MODULE_0__["log"])('load m module');
 
-function log (info) {
-    console.log(info);
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "log", function() { return log; });
+function log(info) {
+  console.log(info);
 }
-// CONCATENATED MODULE: ./src/index.js
-console.log('hello webpack')
-
-
-log('load m module');
 
 /***/ })
 /******/ ]);

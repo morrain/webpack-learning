@@ -1,4 +1,2 @@
-console.log('hello webpack')
-
-import $ from "jquery";
-console.log($);
+import { log } from './m';
+log('load m module');
